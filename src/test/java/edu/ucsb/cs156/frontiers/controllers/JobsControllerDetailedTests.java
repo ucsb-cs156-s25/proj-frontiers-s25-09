@@ -374,4 +374,23 @@ public class JobsControllerDetailedTests extends ControllerTestCase {
     Job jobReturned = objectMapper.readValue(responseString, Job.class);
     MatcherAssert.assertThat(jobReturned.getStatus(), Matchers.anyOf(Matchers.is("completed"), Matchers.is("running")));
   }
+
+  @Test
+public void testLaunchGitHubOrgStatusJob() throws Exception {
+    // given
+    Job job = Job.builder().id(123L).build();
+    when(jobService.runAsJob(any(GitHubOrgStatusJob.class))).thenReturn(job);
+
+    // when
+    MvcResult response = mockMvc
+            .perform(post("/api/jobs/launch/githuborgstatus").with(csrf()))
+            .andExpect(status().isOk()).andReturn();
+
+    // then
+    verify(jobService).runAsJob(any(GitHubOrgStatusJob.class));
+    
+    String responseString = response.getResponse().getContentAsString();
+    Job jobReturned = objectMapper.readValue(responseString, Job.class);
+    assertEquals(123L, jobReturned.getId());
+}
 }
