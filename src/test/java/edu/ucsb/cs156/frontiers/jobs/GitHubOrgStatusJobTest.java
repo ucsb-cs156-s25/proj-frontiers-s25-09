@@ -32,9 +32,10 @@ public class GitHubOrgStatusJobTest {
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        job = new GitHubOrgStatusJob();
-        job.setCourseService(courseService);
-        job.setGithubOrgMembershipService(githubOrgMembershipService);
+        job = GitHubOrgStatusJob.builder()
+        .courseService(courseService)
+        .githubOrgMembershipService(githubOrgMembershipService)
+        .build();
     }
 
     @Test

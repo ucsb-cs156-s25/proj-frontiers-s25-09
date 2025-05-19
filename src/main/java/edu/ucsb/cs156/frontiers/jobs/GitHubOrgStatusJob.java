@@ -8,29 +8,17 @@ import edu.ucsb.cs156.frontiers.services.CourseService;
 import edu.ucsb.cs156.frontiers.services.GithubOrgMembershipService;
 import edu.ucsb.cs156.frontiers.services.jobs.JobContext;
 import edu.ucsb.cs156.frontiers.services.jobs.JobContextConsumer;
+import lombok.Builder;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
-@Component
+@Builder
 @Slf4j
 public class GitHubOrgStatusJob implements JobContextConsumer {
 
-    @Autowired
     private CourseService courseService;
-
-    @Autowired
     private GithubOrgMembershipService githubOrgMembershipService;
-
-    public void setCourseService(CourseService courseService) {
-        this.courseService = courseService;
-    }
-
-    public void setGithubOrgMembershipService(GithubOrgMembershipService githubOrgMembershipService) {
-        this.githubOrgMembershipService = githubOrgMembershipService;
-    }
 
     @Override
     public void accept(JobContext ctx) throws Exception {

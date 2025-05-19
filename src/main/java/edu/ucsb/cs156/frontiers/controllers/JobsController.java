@@ -26,6 +26,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import edu.ucsb.cs156.frontiers.jobs.GitHubOrgStatusJob;
+import edu.ucsb.cs156.frontiers.services.CourseService;
+import edu.ucsb.cs156.frontiers.services.GithubOrgMembershipService;
+
 
 
 @Tag(name = "Jobs")
@@ -41,7 +44,12 @@ public class JobsController extends ApiController {
   
   @Autowired ObjectMapper mapper;
 
-  @Autowired private GitHubOrgStatusJob gitHubOrgStatusJob;
+  @Autowired CourseService courseService;
+  @Autowired GithubOrgMembershipService githubOrgMembershipService;
+
+
+
+
 
 
   @Operation(summary = "List all jobs")
@@ -116,10 +124,14 @@ public class JobsController extends ApiController {
     return jobService.runAsJob(job);
   }
 
-  @Operation(summary = "Launch GitHub Organization Status Job")
-//@PreAuthorize("hasRole('ROLE_ADMIN')")
+@Operation(summary = "Launch GitHub Organization Status Job")
+@PreAuthorize("hasRole('ROLE_ADMIN')")
 @PostMapping("/launch/githuborgstatus")
 public Job launchGitHubOrgStatusJob() {
-    return jobService.runAsJob(gitHubOrgStatusJob);
+    GitHubOrgStatusJob job = GitHubOrgStatusJob.builder()
+        .courseService(courseService)
+        .githubOrgMembershipService(githubOrgMembershipService)
+        .build();
+    return jobService.runAsJob(job);
 }
 }
