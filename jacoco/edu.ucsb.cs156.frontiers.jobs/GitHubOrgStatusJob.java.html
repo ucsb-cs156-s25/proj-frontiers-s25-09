@@ -125,7 +125,7 @@ public class GitHubOrgStatusJob implements JobContextConsumer {
             }
         }
         
-<span class="pc bpc" id="L128" title="1 of 2 branches missed.">        return &quot;ID:&quot; + (student.getId() != null ? student.getId() : &quot;unknown&quot;);</span>
+<span class="fc bfc" id="L128" title="All 2 branches covered.">        return &quot;ID:&quot; + (student.getId() != null ? student.getId() : &quot;unknown&quot;);</span>
     }
 
     private String getStaffIdentifier(CourseStaff staff) {
@@ -138,12 +138,12 @@ public class GitHubOrgStatusJob implements JobContextConsumer {
 <span class="pc bpc" id="L138" title="1 of 4 branches missed.">            if (user.getEmail() != null &amp;&amp; !user.getEmail().trim().isEmpty()) {</span>
 <span class="fc" id="L139">                return user.getEmail();</span>
             }
-<span class="pc bpc" id="L141" title="2 of 4 branches missed.">            if (user.getGithubLogin() != null &amp;&amp; !user.getGithubLogin().trim().isEmpty()) {</span>
+<span class="pc bpc" id="L141" title="1 of 4 branches missed.">            if (user.getGithubLogin() != null &amp;&amp; !user.getGithubLogin().trim().isEmpty()) {</span>
 <span class="fc" id="L142">                return user.getGithubLogin();</span>
             }
         }
         
-<span class="pc bpc" id="L146" title="1 of 2 branches missed.">        return &quot;ID:&quot; + (staff.getId() != null ? staff.getId() : &quot;unknown&quot;);</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">        return &quot;ID:&quot; + (staff.getId() != null ? staff.getId() : &quot;unknown&quot;);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
