@@ -16,6 +16,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.client.MockRestServiceServer;
 
+import edu.ucsb.cs156.frontiers.services.CourseService;
+import edu.ucsb.cs156.frontiers.services.GithubOrgMembershipService;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,6 +48,12 @@ public class OrganizationMemberServiceTests {
 
     @MockitoBean
     private WiremockService wiremockService;
+
+    @MockitoBean
+    CourseService courseService;
+
+    @MockitoBean
+    GithubOrgMembershipService githubOrgMembershipService;
 
     private Course testCourse;
     private static final String TEST_TOKEN = "test-token";
