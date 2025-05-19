@@ -24,6 +24,9 @@ import static org.mockito.Mockito.doReturn;
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.*;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.*;
 
+import edu.ucsb.cs156.frontiers.services.CourseService;
+import edu.ucsb.cs156.frontiers.services.GithubOrgMembershipService;
+
 @RestClientTest(RepositoryService.class)
 @AutoConfigureDataJpa
 public class RepositoryServiceTests {
@@ -35,6 +38,12 @@ public class RepositoryServiceTests {
 
     @MockitoBean
     private WiremockService wiremockService;
+
+    @MockitoBean
+    CourseService courseService;
+    
+    @MockitoBean
+    GithubOrgMembershipService githubOrgMembershipService;
 
     @Autowired
     RepositoryService repositoryService;
