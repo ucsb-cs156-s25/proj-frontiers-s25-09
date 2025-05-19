@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GitHubOrgStatusJob.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">frontiers</a> &gt; <a href="index.source.html" class="el_package">edu.ucsb.cs156.frontiers.jobs</a> &gt; <span class="el_source">GitHubOrgStatusJob.java</span></div><h1>GitHubOrgStatusJob.java</h1><pre class="source lang-java linenums">package edu.ucsb.cs156.frontiers.jobs;
+
+import edu.ucsb.cs156.frontiers.entities.Course;
+import edu.ucsb.cs156.frontiers.entities.CourseStaff;
+import edu.ucsb.cs156.frontiers.entities.RosterStudent;
+import edu.ucsb.cs156.frontiers.entities.User;
+import edu.ucsb.cs156.frontiers.services.CourseService;
+import edu.ucsb.cs156.frontiers.services.GithubOrgMembershipService;
+import edu.ucsb.cs156.frontiers.services.jobs.JobContext;
+import edu.ucsb.cs156.frontiers.services.jobs.JobContextConsumer;
+import lombok.Builder;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+
+@Builder
+<span class="fc" id="L17">@Slf4j</span>
+public class GitHubOrgStatusJob implements JobContextConsumer {
+
+    private CourseService courseService;
+    private GithubOrgMembershipService githubOrgMembershipService;
+
+    @Override
+    public void accept(JobContext ctx) throws Exception {
+<span class="fc" id="L25">        List&lt;Course&gt; courses = courseService.getAllCourses();</span>
+<span class="fc" id="L26">        ctx.log(&quot;=== GitHub Org Status Job Started ===&quot;);</span>
+<span class="fc" id="L27">        ctx.log(&quot;Found &quot; + courses.size() + &quot; courses to process&quot;);</span>
+
+<span class="fc bfc" id="L29" title="All 2 branches covered.">        for (Course course : courses) {</span>
+<span class="fc" id="L30">            ctx.log(&quot;Processing course &quot; + course.getId() + </span>
+<span class="fc" id="L31">                   &quot; - orgName: &quot; + course.getOrgName() + </span>
+<span class="fc" id="L32">                   &quot; - installationId: &quot; + course.getInstallationId());</span>
+                   
+<span class="fc bfc" id="L34" title="All 2 branches covered.">            if (!isGithubConfigured(course)) {</span>
+<span class="fc" id="L35">                ctx.log(&quot;Skipping course &quot; + course.getId() + &quot; - not set up with GitHub org and app.&quot;);</span>
+<span class="fc" id="L36">                continue;</span>
+            }
+
+<span class="fc" id="L39">            processStudentRoster(ctx, course);</span>
+<span class="fc" id="L40">            processStaffRoster(ctx, course);</span>
+<span class="fc" id="L41">        }</span>
+        
+<span class="fc" id="L43">        ctx.log(&quot;=== GitHub Org Status Job Completed ===&quot;);</span>
+<span class="fc" id="L44">    }</span>
+
+    private boolean isGithubConfigured(Course course) {
+<span class="pc bpc" id="L47" title="1 of 4 branches missed.">        return course.getOrgName() != null &amp;&amp; !course.getOrgName().trim().isEmpty() &amp;&amp;</span>
+<span class="pc bpc" id="L48" title="2 of 4 branches missed.">               course.getInstallationId() != null &amp;&amp; !course.getInstallationId().trim().isEmpty();</span>
+    }
+
+    private void processStudentRoster(JobContext ctx, Course course) {
+<span class="fc" id="L52">        ctx.log(&quot;Processing student roster for course &quot; + course.getId());</span>
+        
+<span class="pc bpc" id="L54" title="1 of 2 branches missed.">        for (RosterStudent student : course.getRosterStudents()) {</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">            if (hasGithubId(student)) {</span>
+<span class="nc" id="L56">                checkAndUpdateStudentStatus(ctx, course, student);</span>
+            } else {
+<span class="nc" id="L58">                ctx.log(&quot;Student &quot; + getStudentIdentifier(student) + &quot; - no GitHub ID, skipping&quot;);</span>
+            }
+<span class="nc" id="L60">        }</span>
+<span class="fc" id="L61">    }</span>
+
+    private void processStaffRoster(JobContext ctx, Course course) {
+<span class="fc" id="L64">        ctx.log(&quot;Processing staff roster for course &quot; + course.getId());</span>
+        
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        for (CourseStaff staff : course.getCourseStaff()) {</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">            if (hasGithubId(staff)) {</span>
+<span class="nc" id="L68">                checkAndUpdateStaffStatus(ctx, course, staff);</span>
+            } else {
+<span class="nc" id="L70">                ctx.log(&quot;Staff &quot; + getStaffIdentifier(staff) + &quot; - no GitHub ID, skipping&quot;);</span>
+            }
+<span class="nc" id="L72">        }</span>
+<span class="fc" id="L73">    }</span>
+
+    private boolean hasGithubId(RosterStudent student) {
+<span class="nc bnc" id="L76" title="All 4 branches missed.">        return student.getGithubId() != null &amp;&amp; student.getGithubId() != 0;</span>
+    }
+
+    private boolean hasGithubId(CourseStaff staff) {
+<span class="nc" id="L80">        User user = staff.getUser();</span>
+<span class="nc bnc" id="L81" title="All 4 branches missed.">        return user != null &amp;&amp; user.getGithubId() != 0;</span>
+    }
+
+    private void checkAndUpdateStudentStatus(JobContext ctx, Course course, RosterStudent student) {
+        try {
+<span class="nc" id="L86">            String githubId = String.valueOf(student.getGithubId());</span>
+<span class="nc" id="L87">            boolean isMember = githubOrgMembershipService.isMember(course.getOrgName(), githubId);</span>
+            
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            String status = isMember ? &quot;MEMBER&quot; : &quot;NOT_MEMBER&quot;;</span>
+<span class="nc" id="L90">            ctx.log(&quot;Student &quot; + getStudentIdentifier(student) + &quot; → &quot; + status);</span>
+<span class="nc" id="L91">        } catch (Exception e) {</span>
+<span class="nc" id="L92">            ctx.log(&quot;Error checking student &quot; + getStudentIdentifier(student) + &quot;: &quot; + e.getMessage());</span>
+<span class="nc" id="L93">        }</span>
+<span class="nc" id="L94">    }</span>
+
+    private void checkAndUpdateStaffStatus(JobContext ctx, Course course, CourseStaff staff) {
+        try {
+<span class="nc" id="L98">            User user = staff.getUser();</span>
+<span class="nc" id="L99">            String githubId = String.valueOf(user.getGithubId());</span>
+<span class="nc" id="L100">            boolean isMember = githubOrgMembershipService.isMember(course.getOrgName(), githubId);</span>
+            
+<span class="nc bnc" id="L102" title="All 2 branches missed.">            String status = isMember ? &quot;MEMBER&quot; : &quot;NOT_MEMBER&quot;;</span>
+<span class="nc" id="L103">            ctx.log(&quot;Staff &quot; + getStaffIdentifier(staff) + &quot; → &quot; + status);</span>
+<span class="nc" id="L104">        } catch (Exception e) {</span>
+<span class="nc" id="L105">            ctx.log(&quot;Error checking staff &quot; + getStaffIdentifier(staff) + &quot;: &quot; + e.getMessage());</span>
+<span class="nc" id="L106">        }</span>
+<span class="nc" id="L107">    }</span>
+
+    private String getStudentIdentifier(RosterStudent student) {
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        if (student == null) {</span>
+<span class="nc" id="L111">            return &quot;unknown&quot;;</span>
+        }
+        
+<span class="nc bnc" id="L114" title="All 4 branches missed.">        if (student.getEmail() != null &amp;&amp; !student.getEmail().trim().isEmpty()) {</span>
+<span class="nc" id="L115">            return student.getEmail();</span>
+        }
+        
+<span class="nc" id="L118">        User user = student.getUser();</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">        if (user != null) {</span>
+<span class="nc bnc" id="L120" title="All 4 branches missed.">            if (user.getEmail() != null &amp;&amp; !user.getEmail().trim().isEmpty()) {</span>
+<span class="nc" id="L121">                return user.getEmail();</span>
+            }
+<span class="nc bnc" id="L123" title="All 4 branches missed.">            if (user.getGithubLogin() != null &amp;&amp; !user.getGithubLogin().trim().isEmpty()) {</span>
+<span class="nc" id="L124">                return user.getGithubLogin();</span>
+            }
+        }
+        
+<span class="nc bnc" id="L128" title="All 2 branches missed.">        return &quot;ID:&quot; + (student.getId() != null ? student.getId() : &quot;unknown&quot;);</span>
+    }
+
+    private String getStaffIdentifier(CourseStaff staff) {
+<span class="nc bnc" id="L132" title="All 2 branches missed.">        if (staff == null) {</span>
+<span class="nc" id="L133">            return &quot;unknown&quot;;</span>
+        }
+        
+<span class="nc" id="L136">        User user = staff.getUser();</span>
+<span class="nc bnc" id="L137" title="All 2 branches missed.">        if (user != null) {</span>
+<span class="nc bnc" id="L138" title="All 4 branches missed.">            if (user.getEmail() != null &amp;&amp; !user.getEmail().trim().isEmpty()) {</span>
+<span class="nc" id="L139">                return user.getEmail();</span>
+            }
+<span class="nc bnc" id="L141" title="All 4 branches missed.">            if (user.getGithubLogin() != null &amp;&amp; !user.getGithubLogin().trim().isEmpty()) {</span>
+<span class="nc" id="L142">                return user.getGithubLogin();</span>
+            }
+        }
+        
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        return &quot;ID:&quot; + (staff.getId() != null ? staff.getId() : &quot;unknown&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
