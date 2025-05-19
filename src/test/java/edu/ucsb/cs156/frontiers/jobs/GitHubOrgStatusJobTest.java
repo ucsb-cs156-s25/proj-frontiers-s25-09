@@ -18,6 +18,8 @@ import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.lang.reflect.Method;
+
 
 public class GitHubOrgStatusJobTest {
 
@@ -677,5 +679,510 @@ public void testIsGithubConfiguredWithWhitespaceInstallationId() throws Exceptio
 
     verify(jobContext).log("Skipping course 1 - not set up with GitHub org and app.");
 }
+@Test
+public void testGetStaffIdentifierWithNullStaffObject() throws Exception {
+    // Use reflection to invoke the private method directly with null
+    java.lang.reflect.Method getStaffIdentifierMethod = 
+        GitHubOrgStatusJob.class.getDeclaredMethod("getStaffIdentifier", CourseStaff.class);
+    getStaffIdentifierMethod.setAccessible(true);
+    
+    String result = (String) getStaffIdentifierMethod.invoke(job, (CourseStaff) null);
+    
+    assertEquals("unknown", result);
+}
 
+@Test
+public void testGetStudentIdentifierWithDirectEmail() throws Exception {
+    RosterStudent student = RosterStudent.builder()
+            .id(10L)
+            .githubId(10101)
+            .email("direct@email.com")  // Direct email on student
+            .user(null)  // No user object
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(Arrays.asList(student))
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "10101")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Student direct@email.com → MEMBER");
+}
+
+// Test student with whitespace email (should be trimmed)
+@Test
+public void testGetStudentIdentifierWithWhitespaceEmail() throws Exception {
+    RosterStudent student = RosterStudent.builder()
+            .id(11L)
+            .githubId(11111)
+            .email("  valid@email.com  ")  // Email with whitespace
+            .user(null)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(Arrays.asList(student))
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "11111")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Student   valid@email.com   → MEMBER");
+}
+
+// Test staff with valid user email
+@Test
+public void testGetStaffIdentifierWithUserEmail() throws Exception {
+    User staffUser = User.builder()
+            .email("staff@email.com")
+            .githubId(22222)
+            .githubLogin(null)
+            .build();
+    
+    CourseStaff staff = CourseStaff.builder()
+            .id(7L)
+            .user(staffUser)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(Arrays.asList(staff))
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "22222")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Staff staff@email.com → MEMBER");
+}
+
+// Test staff with valid github login (no email)
+@Test
+public void testGetStaffIdentifierWithGithubLogin() throws Exception {
+    User staffUser = User.builder()
+            .email(null)  // No email
+            .githubId(33333)
+            .githubLogin("staffgithub")
+            .build();
+    
+    CourseStaff staff = CourseStaff.builder()
+            .id(8L)
+            .user(staffUser)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(Arrays.asList(staff))
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "33333")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Staff staffgithub → MEMBER");
+}
+
+// Test isGithubConfigured with null values
+@Test
+public void testIsGithubConfiguredWithNullOrgName() throws Exception {
+    Course course = Course.builder()
+            .id(3L)
+            .orgName(null)  
+            .installationId("valid-installation")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Skipping course 3 - not set up with GitHub org and app.");
+}
+
+// Test isGithubConfigured with null installation ID
+@Test
+public void testIsGithubConfiguredWithNullInstallationId() throws Exception {
+    Course course = Course.builder()
+            .id(4L)
+            .orgName("valid-org")
+            .installationId(null)  
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Skipping course 4 - not set up with GitHub org and app.");
+}
+@Test
+public void testGetStudentIdentifierWithNullStudentObject() throws Exception {
+    // Use reflection to test the private method with null
+    java.lang.reflect.Method getStudentIdentifierMethod = 
+        GitHubOrgStatusJob.class.getDeclaredMethod("getStudentIdentifier", RosterStudent.class);
+    getStudentIdentifierMethod.setAccessible(true);
+    
+    String result = (String) getStudentIdentifierMethod.invoke(job, (RosterStudent) null);
+    
+    assertEquals("unknown", result);
+}
+
+@Test
+public void testGetStudentIdentifierWithEmptyEmail() throws Exception {
+  
+    User userWithEmail = User.builder()
+            .email("user@example.com")
+            .githubLogin("userlogin")
+            .build();
+    
+    RosterStudent student = RosterStudent.builder()
+            .id(5L)
+            .githubId(55555)
+            .email("") 
+            .user(userWithEmail)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(Arrays.asList(student))
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "55555")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Student user@example.com → MEMBER");
+}
+
+@Test
+public void testGetStudentIdentifierWithWhitespaceOnlyEmail() throws Exception {
+
+    User userWithEmail = User.builder()
+            .email("fallback@example.com")
+            .githubLogin("fallbacklogin")
+            .build();
+    
+    RosterStudent student = RosterStudent.builder()
+            .id(6L)
+            .githubId(66666)
+            .email("   ")  
+            .user(userWithEmail)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(Arrays.asList(student))
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "66666")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Student fallback@example.com → MEMBER");
+}
+
+@Test
+public void testGetStudentIdentifierWithUserEmptyEmail() throws Exception {
+
+    User userWithEmptyEmail = User.builder()
+            .email("") 
+            .githubLogin("githubuser")
+            .build();
+    
+    RosterStudent student = RosterStudent.builder()
+            .id(7L)
+            .githubId(77777)
+            .email(null)  
+            .user(userWithEmptyEmail)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(Arrays.asList(student))
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "77777")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Student githubuser → MEMBER");
+}
+
+@Test
+public void testGetStudentIdentifierWithUserWhitespaceEmail() throws Exception {
+    // Test student where user has whitespace-only email (should fallback to github login)
+    User userWithWhitespaceEmail = User.builder()
+            .email("   ")  // Whitespace-only user email
+            .githubLogin("anotheruser")
+            .build();
+    
+    RosterStudent student = RosterStudent.builder()
+            .id(8L)
+            .githubId(88888)
+            .email(null)
+            .user(userWithWhitespaceEmail)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(Arrays.asList(student))
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "88888")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Student anotheruser → MEMBER");
+}
+
+@Test
+public void testGetStudentIdentifierWithUserEmptyGithubLogin() throws Exception {
+    // Test student where user has empty github login (should fallback to ID)
+    User userWithEmptyLogin = User.builder()
+            .email(null)
+            .githubLogin("")  // Empty github login
+            .build();
+    
+    RosterStudent student = RosterStudent.builder()
+            .id(9L)
+            .githubId(99999)
+            .email(null)
+            .user(userWithEmptyLogin)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(Arrays.asList(student))
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "99999")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Student ID:9 → MEMBER");
+}
+
+@Test
+public void testGetStudentIdentifierWithUserWhitespaceGithubLogin() throws Exception {
+    // Test student where user has whitespace-only github login (should fallback to ID)
+    User userWithWhitespaceLogin = User.builder()
+            .email(null)
+            .githubLogin("   ")  // Whitespace-only github login
+            .build();
+    
+    RosterStudent student = RosterStudent.builder()
+            .id(10L)
+            .githubId(101010)
+            .email(null)
+            .user(userWithWhitespaceLogin)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(Arrays.asList(student))
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "101010")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Student ID:10 → MEMBER");
+}
+
+@Test
+public void testGetStaffIdentifierWithEmptyEmail() throws Exception {
+    // Test staff with empty email (should fallback to github login)
+    User staffUserWithEmptyEmail = User.builder()
+            .email("")  // Empty email
+            .githubId(111111)
+            .githubLogin("staffuser")
+            .build();
+    
+    CourseStaff staff = CourseStaff.builder()
+            .id(5L)
+            .user(staffUserWithEmptyEmail)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(Arrays.asList(staff))
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "111111")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Staff staffuser → MEMBER");
+}
+
+@Test
+public void testGetStaffIdentifierWithWhitespaceEmail() throws Exception {
+    // Test staff with whitespace-only email (should fallback to github login)
+    User staffUserWithWhitespaceEmail = User.builder()
+            .email("   ")  // Whitespace-only email
+            .githubId(222222)
+            .githubLogin("staffuser2")
+            .build();
+    
+    CourseStaff staff = CourseStaff.builder()
+            .id(6L)
+            .user(staffUserWithWhitespaceEmail)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(Arrays.asList(staff))
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "222222")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Staff staffuser2 → MEMBER");
+}
+
+@Test
+public void testGetStaffIdentifierWithEmptyGithubLogin() throws Exception {
+    // Test staff with empty github login (should fallback to ID)
+    User staffUserWithEmptyLogin = User.builder()
+            .email(null)
+            .githubId(333333)
+            .githubLogin("")  // Empty github login
+            .build();
+    
+    CourseStaff staff = CourseStaff.builder()
+            .id(7L)
+            .user(staffUserWithEmptyLogin)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(Arrays.asList(staff))
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "333333")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Staff ID:7 → MEMBER");
+}
+
+
+@Test
+public void testGetStudentIdentifierGithubLoginNull() throws Exception {
+    User user = User.builder()
+            .email(null)
+            .githubLogin(null)  
+            .build();
+    
+    RosterStudent student = RosterStudent.builder()
+            .id(100L)
+            .githubId(100100)
+            .email(null)
+            .user(user)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(Arrays.asList(student))
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "100100")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Student ID:100 → MEMBER");
+}
+
+@Test
+public void testGetStudentIdentifierGithubLoginEmpty() throws Exception {
+    User user = User.builder()
+            .email(null)
+            .githubLogin("") 
+            .build();
+    
+    RosterStudent student = RosterStudent.builder()
+            .id(101L)
+            .githubId(101101)
+            .email(null)
+            .user(user)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(Arrays.asList(student))
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "101101")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Student ID:101 → MEMBER");
+}
 }
