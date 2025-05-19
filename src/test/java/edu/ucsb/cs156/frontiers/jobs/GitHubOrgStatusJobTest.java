@@ -543,4 +543,139 @@ public class GitHubOrgStatusJobTest {
         verify(jobContext).log("Staff githubstaff → MEMBER");
         verify(jobContext).log("Staff ID:3 - no GitHub ID, skipping");
     }
+    
+    @Test
+public void testGetStudentIdentifierWithAllNullFields() throws Exception {
+    RosterStudent student = RosterStudent.builder()
+            .id(null)
+            .githubId(null)
+            .email(null)
+            .user(null)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(Arrays.asList(student))
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Student ID:unknown - no GitHub ID, skipping");
+}
+
+@Test
+public void testGetStaffIdentifierWithAllNullFields() throws Exception {
+    CourseStaff staff = CourseStaff.builder()
+            .id(null)
+            .user(null)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(Arrays.asList(staff))
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Staff ID:unknown - no GitHub ID, skipping");
+}
+
+@Test 
+public void testGetStudentIdentifierWithNullIdReturnsUnknown() throws Exception {
+    RosterStudent student = RosterStudent.builder()
+            .id(null)
+            .githubId(12345)
+            .email(null)
+            .user(null)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(Arrays.asList(student))
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "12345")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Student ID:unknown → MEMBER");
+}
+
+@Test 
+public void testGetStaffIdentifierWithNullIdReturnsUnknown() throws Exception {
+    User staffUser = User.builder()
+            .email(null)
+            .githubId(54321)
+            .githubLogin(null)
+            .build();
+    
+    CourseStaff staff = CourseStaff.builder()
+            .id(null)
+            .user(staffUser)
+            .build();
+
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(Arrays.asList(staff))
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+    when(githubOrgMembershipService.isMember("test-org", "54321")).thenReturn(true);
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Staff ID:unknown → MEMBER");
+}
+
+@Test
+public void testIsGithubConfiguredWithWhitespaceOrgName() throws Exception {
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("   ")
+            .installationId("valid-installation")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Skipping course 1 - not set up with GitHub org and app.");
+}
+
+@Test
+public void testIsGithubConfiguredWithWhitespaceInstallationId() throws Exception {
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("valid-org")
+            .installationId("   ")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+
+    job.accept(jobContext);
+
+    verify(jobContext).log("Skipping course 1 - not set up with GitHub org and app.");
+}
+
 }
