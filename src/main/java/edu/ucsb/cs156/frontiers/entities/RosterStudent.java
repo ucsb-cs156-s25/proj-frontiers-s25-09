@@ -1,7 +1,6 @@
 package edu.ucsb.cs156.frontiers.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import edu.ucsb.cs156.frontiers.enums.OrgStatus;
 import edu.ucsb.cs156.frontiers.enums.RosterStatus;
 import jakarta.persistence.*;
@@ -13,6 +12,7 @@ import lombok.*;
 @Builder
 @Entity
 public class RosterStudent {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -39,5 +39,4 @@ public class RosterStudent {
 
     private Integer githubId;
     private String githubLogin;
-
 }
