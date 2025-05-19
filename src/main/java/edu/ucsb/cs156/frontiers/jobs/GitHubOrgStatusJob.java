@@ -7,14 +7,15 @@ import edu.ucsb.cs156.frontiers.entities.User;
 import edu.ucsb.cs156.frontiers.services.CourseService;
 import edu.ucsb.cs156.frontiers.services.GithubOrgMembershipService;
 import edu.ucsb.cs156.frontiers.services.jobs.JobContext;
-import edu.ucsb.cs156.frontiers.services.jobs.JobContextConsumer;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
-public class GitHubOrgStatusJob implements JobContextConsumer {
+@Slf4j
+public class GitHubOrgStatusJob extends AbstractJob {
 
     @Autowired
     private CourseService courseService;
@@ -31,7 +32,7 @@ public class GitHubOrgStatusJob implements JobContextConsumer {
     }
 
     @Override
-    public void accept(JobContext ctx) throws Exception {
+    public void run(JobContext ctx) throws Exception {
         List<Course> courses = courseService.getAllCourses();
         ctx.log("=== GitHub Org Status Job Started ===");
         ctx.log("Found " + courses.size() + " courses to process");
