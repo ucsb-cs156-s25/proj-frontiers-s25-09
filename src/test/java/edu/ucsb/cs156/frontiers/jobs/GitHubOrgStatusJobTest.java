@@ -1185,4 +1185,90 @@ public void testGetStudentIdentifierGithubLoginEmpty() throws Exception {
 
     verify(jobContext).log("Student ID:101 → MEMBER");
 }
+@Test
+public void testAcceptLogsStartMessage() throws Exception {
+    // given
+    Course course = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course));
+
+    // when
+    job.accept(jobContext);
+
+    // then
+    verify(jobContext).log("=== GitHub Org Status Job Started ===");
+    verify(jobContext).log("Found 1 courses to process");
+    verify(jobContext).log("Processing course 1 - orgName: test-org - installationId: 12345");
+    verify(jobContext).log("Processing student roster for course 1");
+    verify(jobContext).log("Processing staff roster for course 1");
+    verify(jobContext).log("=== GitHub Org Status Job Completed ===");
+}
+
+@Test 
+public void testAcceptLogsCorrectNumberOfCourses() throws Exception {
+    // given
+    Course course1 = Course.builder()
+            .id(1L)
+            .orgName("test-org-1")
+            .installationId("111")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(new ArrayList<>())
+            .build();
+            
+    Course course2 = Course.builder()
+            .id(2L)
+            .orgName("test-org-2") 
+            .installationId("222")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(course1, course2));
+
+    // when
+    job.accept(jobContext);
+
+    // then
+    verify(jobContext).log("=== GitHub Org Status Job Started ===");
+    verify(jobContext).log("Found 2 courses to process");
+    verify(jobContext).log("=== GitHub Org Status Job Completed ===");
+}
+
+@Test
+public void testAcceptLogsSkippedMessage() throws Exception {
+    // given 
+    Course configuredCourse = Course.builder()
+            .id(1L)
+            .orgName("test-org")
+            .installationId("12345")
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(new ArrayList<>())
+            .build();
+            
+    Course unconfiguredCourse = Course.builder()
+            .id(2L)
+            .orgName(null)
+            .installationId(null)
+            .rosterStudents(new ArrayList<>())
+            .courseStaff(new ArrayList<>())
+            .build();
+    
+    when(courseService.getAllCourses()).thenReturn(Arrays.asList(configuredCourse, unconfiguredCourse));
+
+    // when
+    job.accept(jobContext);
+
+    // then
+    verify(jobContext).log("=== GitHub Org Status Job Started ===");
+    verify(jobContext).log("Found 2 courses to process");
+    verify(jobContext).log("Processing course 1 - orgName: test-org - installationId: 12345");
+    verify(jobContext).log("Skipping course 2 - not set up with GitHub org and app.");
+    verify(jobContext).log("=== GitHub Org Status Job Completed ===");
+}
 }
