@@ -40,6 +40,9 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.ucsb.cs156.frontiers.jobs.GitHubOrgStatusJob;
+
+
 /**
  * This class tests the ability of the JobsController to manipulate jobs, and
  * the funcitonality of the jobs system in general.
