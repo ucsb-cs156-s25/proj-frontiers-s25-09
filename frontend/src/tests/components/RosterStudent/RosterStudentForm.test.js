@@ -129,7 +129,7 @@ describe("RosterStudentForm tests", () => {
     ).not.toBeInTheDocument();
   });
 
-  test("Test that navigate(-1) is called when Cancel is clicked", async () => {
+  test("cancel button navigates to previous page", async () => {
     render(
       <Router>
         <RosterStudentForm />
