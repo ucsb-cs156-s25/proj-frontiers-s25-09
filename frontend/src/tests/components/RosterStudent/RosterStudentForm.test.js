@@ -48,7 +48,7 @@ describe("RosterStudentForm tests", () => {
     );
   });
 
-  test("Correct Error messages on bad input", async () => {
+  test("shows validation errors for invalid inputs", async () => {
     render(
       <Router>
         <RosterStudentForm />
@@ -71,7 +71,7 @@ describe("RosterStudentForm tests", () => {
     await screen.findByText(/Enter a valid email address/);
   });
 
-  test("Correct Error messages on missing input", async () => {
+  test("validates required fields", async () => {
     render(
       <Router>
         <RosterStudentForm />
