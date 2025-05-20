@@ -6,7 +6,7 @@ import { hasRole } from "main/utils/currentUser";
 
 // Helper for DELETE request
 // Stryker disable StringLiteral : hard to test for string literals
-const cellToAxiosParamsDelete = (cell) => {
+export const cellToAxiosParamsDelete = (cell) => {
   return {
     url: "/api/rosterstudents",
     method: "DELETE",
@@ -17,9 +17,8 @@ const cellToAxiosParamsDelete = (cell) => {
 };
 // Stryker restore StringLiteral
 
-// Success callback
 // Stryker disable all : hard to test for console logs
-const onDeleteSuccess = (message) => {
+export const onDeleteSuccess = (message) => {
   console.log("Delete successful:", message);
 };
 // Stryker restore all
@@ -84,6 +83,10 @@ export default function RosterStudentTable({ rosterStudents, currentUser }) {
   }
 
   return (
-    <OurTable data={rosterStudents} columns={columns} testid={"RosterStudentTable"} />
+    <OurTable
+      data={rosterStudents}
+      columns={columns}
+      testid={"RosterStudentTable"}
+    />
   );
 }
