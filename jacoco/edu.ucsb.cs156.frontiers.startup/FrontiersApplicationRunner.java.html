@@ -5,20 +5,20 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-<span class="nc" id="L8">@Slf4j</span>
+<span class="fc" id="L8">@Slf4j</span>
 @Component
 public class FrontiersApplicationRunner implements ApplicationRunner {
 
   private final FrontiersStartup frontiersStartup;
 
-<span class="nc" id="L14">  public FrontiersApplicationRunner(FrontiersStartup frontiersStartup) {</span>
-<span class="nc" id="L15">    this.frontiersStartup = frontiersStartup;</span>
-<span class="nc" id="L16">  }</span>
+<span class="fc" id="L14">  public FrontiersApplicationRunner(FrontiersStartup frontiersStartup) {</span>
+<span class="fc" id="L15">    this.frontiersStartup = frontiersStartup;</span>
+<span class="fc" id="L16">  }</span>
 
   @Override
   public void run(ApplicationArguments args) {
-<span class="nc" id="L20">    log.info(&quot;FrontiersApplicationRunner.run called&quot;);</span>
-<span class="nc" id="L21">    frontiersStartup.alwaysRunOnStartup();</span>
-<span class="nc" id="L22">  }</span>
+<span class="fc" id="L20">    log.info(&quot;FrontiersApplicationRunner.run called&quot;);</span>
+<span class="fc" id="L21">    frontiersStartup.alwaysRunOnStartup();</span>
+<span class="fc" id="L22">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

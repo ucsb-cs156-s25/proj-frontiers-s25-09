@@ -7,9 +7,9 @@ import org.springframework.stereotype.Component;
 import edu.ucsb.cs156.frontiers.entities.Admin;
 import edu.ucsb.cs156.frontiers.repositories.AdminRepository;
 
-<span class="nc" id="L10">@Slf4j</span>
+<span class="fc" id="L10">@Slf4j</span>
 @Component
-<span class="nc" id="L12">public class FrontiersStartup {</span>
+<span class="fc" id="L12">public class FrontiersStartup {</span>
 
   // Repository for admins
   @Autowired
@@ -19,25 +19,25 @@ import edu.ucsb.cs156.frontiers.repositories.AdminRepository;
   private String adminEmails;
 
   public void alwaysRunOnStartup() {
-<span class="nc" id="L22">    log.info(&quot;AdminStartup.alwaysRunOnStartup called&quot;);</span>
+<span class="fc" id="L22">    log.info(&quot;AdminStartup.alwaysRunOnStartup called&quot;);</span>
     // Split the comma-separated emails and add them to the database if they don't exist
-<span class="nc bnc" id="L24" title="All 4 branches missed.">    if (adminEmails != null &amp;&amp; !adminEmails.isEmpty()) {</span>
-<span class="nc" id="L25">        String[] emails = adminEmails.split(&quot;,&quot;);</span>
-<span class="nc bnc" id="L26" title="All 2 branches missed.">        for (String email : emails) {</span>
-<span class="nc" id="L27">            email = email.trim();</span>
-<span class="nc" id="L28">            log.info(&quot;Adding admin: {}&quot;, email);</span>
+<span class="fc bfc" id="L24" title="All 4 branches covered.">    if (adminEmails != null &amp;&amp; !adminEmails.isEmpty()) {</span>
+<span class="fc" id="L25">        String[] emails = adminEmails.split(&quot;,&quot;);</span>
+<span class="fc bfc" id="L26" title="All 2 branches covered.">        for (String email : emails) {</span>
+<span class="fc" id="L27">            email = email.trim();</span>
+<span class="fc" id="L28">            log.info(&quot;Adding admin: {}&quot;, email);</span>
             
             // Check if admin already exists
-<span class="nc bnc" id="L31" title="All 2 branches missed.">            if (!adminRepository.findByEmail(email).isPresent()) {</span>
-<span class="nc" id="L32">                Admin admin = new Admin();</span>
-<span class="nc" id="L33">                admin.setEmail(email);</span>
-<span class="nc" id="L34">                adminRepository.save(admin);</span>
-<span class="nc" id="L35">                log.info(&quot;Admin added: {}&quot;, email);</span>
-<span class="nc" id="L36">            } else {</span>
-<span class="nc" id="L37">                log.info(&quot;Admin already exists: {}&quot;, email);</span>
+<span class="fc bfc" id="L31" title="All 2 branches covered.">            if (!adminRepository.findByEmail(email).isPresent()) {</span>
+<span class="fc" id="L32">                Admin admin = new Admin();</span>
+<span class="fc" id="L33">                admin.setEmail(email);</span>
+<span class="fc" id="L34">                adminRepository.save(admin);</span>
+<span class="fc" id="L35">                log.info(&quot;Admin added: {}&quot;, email);</span>
+<span class="fc" id="L36">            } else {</span>
+<span class="fc" id="L37">                log.info(&quot;Admin already exists: {}&quot;, email);</span>
             }
         }
     }
-<span class="nc" id="L41">  }</span>
+<span class="fc" id="L41">  }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

@@ -17,8 +17,8 @@ frontiers,edu.ucsb.cs156.frontiers.services,OrganizationLinkerService,0,133,0,2,
 frontiers,edu.ucsb.cs156.frontiers.services,CurrentUserService,0,10,0,2,0,2,0,3,0,2
 frontiers,edu.ucsb.cs156.frontiers.services,OrganizationMemberService.new TypeReference() {...},0,3,0,0,0,1,0,1,0,1
 frontiers,edu.ucsb.cs156.frontiers.services,OrganizationMemberService.new TypeReference() {...},0,3,0,0,0,1,0,1,0,1
-frontiers,edu.ucsb.cs156.frontiers.startup,FrontiersStartup,73,0,8,0,16,0,7,0,3,0
-frontiers,edu.ucsb.cs156.frontiers.startup,FrontiersApplicationRunner,17,0,0,0,7,0,3,0,3,0
+frontiers,edu.ucsb.cs156.frontiers.startup,FrontiersStartup,0,73,0,8,0,16,0,7,0,3
+frontiers,edu.ucsb.cs156.frontiers.startup,FrontiersApplicationRunner,0,17,0,0,0,7,0,3,0,3
 frontiers,edu.ucsb.cs156.frontiers.controllers,JobsController,0,98,0,2,0,20,0,11,0,10
 frontiers,edu.ucsb.cs156.frontiers.controllers,CSRFController,0,5,0,0,0,2,0,2,0,2
 frontiers,edu.ucsb.cs156.frontiers.controllers,UserInfoController,0,6,0,0,0,2,0,2,0,2
