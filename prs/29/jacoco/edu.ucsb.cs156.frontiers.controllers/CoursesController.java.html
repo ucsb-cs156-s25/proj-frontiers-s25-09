@@ -163,12 +163,6 @@ import edu.ucsb.cs156.frontiers.enums.OrgStatus;
 
 
 
-
-
-    // Code start for #2
-
-
-    
     /**
      * This method looks up a current user and gets their email.
      * With that email, it that email on every course roster,
@@ -179,28 +173,25 @@ import edu.ucsb.cs156.frontiers.enums.OrgStatus;
      * Relevant fields are: id, installationId, orgName, courseName, term, school
      * For each course, return the status that the student is in
      */
-
-
     
-    // Lists all courses where the current user appears on the roster.
     @Operation(summary = &quot;Get all courses for a student&quot;)
     @PreAuthorize(&quot;hasRole('ROLE_STUDENT')&quot;)
     @GetMapping(&quot;/student&quot;)
     public ResponseEntity&lt;List&lt;StudentCourseView&gt;&gt; getCoursesForStudent() {
-<span class="fc" id="L190">        String email = getCurrentUser().getUser().getEmail();</span>
+<span class="fc" id="L181">        String email = getCurrentUser().getUser().getEmail();</span>
 
-<span class="fc" id="L192">        List&lt;StudentCourseView&gt; results = courseRepository</span>
-<span class="fc" id="L193">                .findAllByRosterStudents_Email(email)</span>
-<span class="fc" id="L194">.stream()</span>
-<span class="fc" id="L195">            .map(c -&gt; new StudentCourseView(c, email))</span>
-<span class="fc" id="L196">                .toList();</span>
+<span class="fc" id="L183">        List&lt;StudentCourseView&gt; results = courseRepository</span>
+<span class="fc" id="L184">                .findAllByRosterStudents_Email(email)</span>
+<span class="fc" id="L185">.stream()</span>
+<span class="fc" id="L186">            .map(c -&gt; new StudentCourseView(c, email))</span>
+<span class="fc" id="L187">                .toList();</span>
 
-<span class="fc" id="L198">        return ResponseEntity.ok(results);</span>
+<span class="fc" id="L189">        return ResponseEntity.ok(results);</span>
     }
 
     
     // Lightweight projection of Course entity with only student-relevant fields
-<span class="fc" id="L203">    public static record StudentCourseView(</span>
+<span class="fc" id="L194">    public static record StudentCourseView(</span>
             Long id,
             String installationId,
             String orgName,
@@ -212,43 +203,35 @@ import edu.ucsb.cs156.frontiers.enums.OrgStatus;
         
         // Creates view from Course entity and student email
         public StudentCourseView(Course c, String email) {
-<span class="fc" id="L215">            this(</span>
-<span class="fc" id="L216">                c.getId(),</span>
-<span class="fc" id="L217">                c.getInstallationId(),</span>
-<span class="fc" id="L218">                c.getOrgName(),</span>
-<span class="fc" id="L219">                c.getCourseName(),</span>
-<span class="fc" id="L220">                c.getTerm(),</span>
-<span class="fc" id="L221">                c.getSchool(),</span>
-<span class="fc" id="L222">                mapStatus(</span>
-<span class="fc" id="L223">                    c.getRosterStudents()</span>
-<span class="fc" id="L224">                     .stream()</span>
-<span class="fc" id="L225">                     .filter(s -&gt; s.getEmail().equals(email))</span>
-<span class="fc" id="L226">                     .findFirst()</span>
-<span class="fc" id="L227">                     .orElse(null)));</span>
-<span class="fc" id="L228">        }</span>
+<span class="fc" id="L206">            this(</span>
+<span class="fc" id="L207">                c.getId(),</span>
+<span class="fc" id="L208">                c.getInstallationId(),</span>
+<span class="fc" id="L209">                c.getOrgName(),</span>
+<span class="fc" id="L210">                c.getCourseName(),</span>
+<span class="fc" id="L211">                c.getTerm(),</span>
+<span class="fc" id="L212">                c.getSchool(),</span>
+<span class="fc" id="L213">                mapStatus(</span>
+<span class="fc" id="L214">                    c.getRosterStudents()</span>
+<span class="fc" id="L215">                     .stream()</span>
+<span class="fc" id="L216">                     .filter(s -&gt; s.getEmail().equals(email))</span>
+<span class="fc" id="L217">                     .findFirst()</span>
+<span class="fc" id="L218">                     .orElse(null)));</span>
+<span class="fc" id="L219">        }</span>
 
         
         // Maps OrgStatus enum to human-readable status message
         private static String mapStatus(RosterStudent rs) {
-<span class="fc bfc" id="L233" title="All 2 branches covered.">            if (rs == null) return &quot;Not yet requested an invitation&quot;;</span>
+<span class="fc bfc" id="L224" title="All 2 branches covered.">            if (rs == null) return &quot;Not yet requested an invitation&quot;;</span>
 
-<span class="fc bfc" id="L235" title="All 5 branches covered.">            return switch (rs.getOrgStatus()) {</span>
-<span class="fc" id="L236">                case NONE -&gt; &quot;Not yet requested an invitation&quot;;</span>
-<span class="fc" id="L237">                case INVITED -&gt; &quot;Has requested an invitation but isn't yet a member&quot;;</span>
-<span class="fc" id="L238">                case MEMBER -&gt; &quot;Is a member of the org&quot;;</span>
-<span class="fc" id="L239">                case OWNER -&gt; &quot;Is an admin in the org&quot;;</span>
-<span class="fc" id="L240">                case EXPIRED -&gt; &quot;Invitation has expired&quot;;</span>
+<span class="fc bfc" id="L226" title="All 5 branches covered.">            return switch (rs.getOrgStatus()) {</span>
+<span class="fc" id="L227">                case NONE -&gt; &quot;Not yet requested an invitation&quot;;</span>
+<span class="fc" id="L228">                case INVITED -&gt; &quot;Has requested an invitation but isn't yet a member&quot;;</span>
+<span class="fc" id="L229">                case MEMBER -&gt; &quot;Is a member of the org&quot;;</span>
+<span class="fc" id="L230">                case OWNER -&gt; &quot;Is an admin in the org&quot;;</span>
+<span class="fc" id="L231">                case EXPIRED -&gt; &quot;Invitation has expired&quot;;</span>
             };
         }
     }
-
-    // Code end for #2
-
-
-
-
-
-
 
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
