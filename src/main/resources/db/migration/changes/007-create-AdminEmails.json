@@ -2,8 +2,8 @@
     "databaseChangeLog": [
       {
         "changeSet": {
-          "id": "0001-create-admin-table",
-          "author": "yourname",
+          "id": "007-create-AdminEmails",
+          "author": "andrewkim102",
           "changes": [
             {
               "createTable": {
