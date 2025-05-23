@@ -284,6 +284,23 @@ import com.opencsv.exceptions.CsvException;
 
 <span class="fc" id="L285">        return rosterStudentRepository.save(rs);</span>
     }
+
+    @Operation(summary = &quot;Delete a roster student by record ID&quot;)
+    @PreAuthorize(&quot;hasRole('ROLE_ADMIN')&quot;)
+    @DeleteMapping(&quot;/{id}&quot;)
+    public ResponseEntity&lt;String&gt; deleteRosterStudentById(
+        @Parameter(description = &quot;RosterStudent record ID&quot;) @PathVariable Long id)
+        throws EntityNotFoundException {
+
+<span class="fc" id="L295">        RosterStudent rs = rosterStudentRepository.findById(id)</span>
+<span class="fc" id="L296">            .orElseThrow(() -&gt; new EntityNotFoundException(RosterStudent.class, id));</span>
+
+<span class="fc" id="L298">        rosterStudentRepository.delete(rs);</span>
+
+<span class="fc" id="L300">        return ResponseEntity.ok(</span>
+<span class="fc" id="L301">            String.format(&quot;Deleted roster student %d&quot;, id));</span>
+    }
+
 }
 
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
