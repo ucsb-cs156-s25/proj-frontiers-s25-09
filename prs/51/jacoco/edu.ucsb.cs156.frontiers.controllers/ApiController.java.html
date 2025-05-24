@@ -70,6 +70,12 @@ import java.util.Map;
     );
   }
 
+  @ExceptionHandler(UnsupportedOperationException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public Map&lt;String, String&gt; handleUnsupportedOperation(UnsupportedOperationException ex) {
+<span class="fc" id="L76">        return Map.of(&quot;message&quot;, ex.getMessage());</span>
+    }
+
       /**
      * This method handles BadRequestException.
      * @param e the exception
@@ -78,11 +84,10 @@ import java.util.Map;
     @ExceptionHandler({ BadRequestException.class })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Object handleBadRequestException(Throwable e) {
-<span class="fc" id="L81">      return Map.of(</span>
-<span class="fc" id="L82">        &quot;type&quot;,    e.getClass().getSimpleName(),</span>
-<span class="fc" id="L83">        &quot;message&quot;, e.getMessage()</span>
+<span class="fc" id="L87">      return Map.of(</span>
+<span class="fc" id="L88">        &quot;type&quot;,    e.getClass().getSimpleName(),</span>
+<span class="fc" id="L89">        &quot;message&quot;, e.getMessage()</span>
       );
     }
-
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
