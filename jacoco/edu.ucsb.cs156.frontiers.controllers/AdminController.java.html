@@ -2,8 +2,9 @@
 
 import java.util.Arrays;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,8 +26,8 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = &quot;Admins&quot;)
 @RequestMapping(&quot;/api/admin/admins&quot;)
 @RestController
-<span class="fc" id="L28">@Slf4j</span>
-<span class="fc" id="L29">public class AdminController extends ApiController{</span>
+<span class="fc" id="L29">@Slf4j</span>
+<span class="fc" id="L30">public class AdminController extends ApiController{</span>
     @Autowired
     AdminRepository adminRepository;
 
@@ -37,8 +38,7 @@ import lombok.extern.slf4j.Slf4j;
     @PreAuthorize(&quot;hasRole('ROLE_ADMIN')&quot;)
     @GetMapping(&quot;/all&quot;)
     public Iterable&lt;Admin&gt; allAdmin() {
-<span class="fc" id="L40">        Iterable&lt;Admin&gt; admin = adminRepository.findAll();</span>
-<span class="fc" id="L41">        return admin;</span>
+<span class="fc" id="L41">        return adminRepository.findAll(Sort.by(&quot;email&quot;).ascending());</span>
     }
 
     @Operation(summary= &quot;Create a new admin&quot;)
@@ -48,14 +48,12 @@ import lombok.extern.slf4j.Slf4j;
     @Parameter(name=&quot;email&quot;) @RequestParam String email)
     throws JsonProcessingException {
 
+<span class="fc" id="L51">    Admin admin = new Admin();</span>
+<span class="fc" id="L52">    admin.setEmail(email);</span>
 
+<span class="fc" id="L54">    Admin savedAdmin = adminRepository.save(admin);</span>
 
-<span class="fc" id="L53">    Admin admin = new Admin();</span>
-<span class="fc" id="L54">    admin.setEmail(email);</span>
-
-<span class="fc" id="L56">    Admin savedAdmin = adminRepository.save(admin);</span>
-
-<span class="fc" id="L58">    return savedAdmin;</span>
+<span class="fc" id="L56">    return savedAdmin;</span>
     }
 
     @Operation(summary= &quot;Delete an Admin&quot;)
@@ -63,18 +61,15 @@ import lombok.extern.slf4j.Slf4j;
     @DeleteMapping(&quot;&quot;)
     public Object deleteAdmin(@Parameter(name=&quot;email&quot;) @RequestParam String email) {
 
-<span class="fc bfc" id="L66" title="All 2 branches covered.">        if (Arrays.asList(protectedAdminEmails).contains(email)) {</span>
-<span class="fc" id="L67">            throw new UnsupportedOperationException(&quot;Cannot delete protected admin: &quot; + email);</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if (Arrays.asList(protectedAdminEmails).contains(email)) {</span>
+<span class="fc" id="L65">            throw new UnsupportedOperationException(&quot;Cannot delete protected admin: &quot; + email);</span>
         }
         
-<span class="fc" id="L70">        Admin  admin = adminRepository.findById(email)</span>
-<span class="fc" id="L71">                .orElseThrow(() -&gt; new EntityNotFoundException(Admin.class, email));</span>
+<span class="fc" id="L68">        Admin  admin = adminRepository.findById(email)</span>
+<span class="fc" id="L69">                .orElseThrow(() -&gt; new EntityNotFoundException(Admin.class, email));</span>
 
-<span class="fc" id="L73">        adminRepository.delete(admin);</span>
-<span class="fc" id="L74">        return genericMessage(&quot;Admin with email is deleted&quot;.formatted(email));</span>
+<span class="fc" id="L71">        adminRepository.delete(admin);</span>
+<span class="fc" id="L72">        return genericMessage(&quot;Admin with email is deleted&quot;.formatted(email));</span>
     }
-
-
-
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
