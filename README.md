@@ -1,7 +1,7 @@
 # proj-frontiers
 
-* Prod: <https://frontiers.dokku-00.cs.ucsb.edu>
-* QA: <https://frontiers-qa.dokku-00.cs.ucsb.edu>
+* Prod: <https://frontiers.dokku-09.cs.ucsb.edu>
+* QA: <https://frontiers-qa.dokku-09.cs.ucsb.edu>
 
 ### Sprint Planning Doc for S25: 
 - <https://docs.google.com/document/d/1IXxmD4hBvDq6uSnpSukdV30o4xyaIAgiRt_Mpqv51yw/edit?usp=sharing>
