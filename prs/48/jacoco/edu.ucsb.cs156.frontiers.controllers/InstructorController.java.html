@@ -2,6 +2,8 @@
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,8 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @Tag(name = &quot;Instructors&quot;)
 @RequestMapping(&quot;/api/admin/instructors&quot;)
 @RestController
-<span class="fc" id="L26">@Slf4j</span>
-<span class="fc" id="L27">public class InstructorController extends ApiController{</span>
+<span class="fc" id="L28">@Slf4j</span>
+<span class="fc" id="L29">public class InstructorController extends ApiController{</span>
     @Autowired
     InstructorRepository instructorRepository;
 
@@ -32,8 +34,7 @@ import lombok.extern.slf4j.Slf4j;
     @PreAuthorize(&quot;hasRole('ROLE_ADMIN')&quot;)
     @GetMapping(&quot;/all&quot;)
     public Iterable&lt;Instructor&gt; allInstructors() {
-<span class="fc" id="L35">        Iterable&lt;Instructor&gt; instructor = instructorRepository.findAll();</span>
-<span class="fc" id="L36">        return instructor;</span>
+<span class="fc" id="L37">        return instructorRepository.findAll(Sort.by(&quot;email&quot;).ascending());</span>
     }
 
     @Operation(summary= &quot;Create a new instructor&quot;)
@@ -43,14 +44,12 @@ import lombok.extern.slf4j.Slf4j;
     @Parameter(name=&quot;email&quot;) @RequestParam String email)
     throws JsonProcessingException {
 
+<span class="fc" id="L47">    Instructor instructor = new Instructor();</span>
+<span class="fc" id="L48">    instructor.setEmail(email);</span>
 
+<span class="fc" id="L50">    Instructor savedInstructor = instructorRepository.save(instructor);</span>
 
-<span class="fc" id="L48">    Instructor instructor = new Instructor();</span>
-<span class="fc" id="L49">    instructor.setEmail(email);</span>
-
-<span class="fc" id="L51">    Instructor savedInstructor = instructorRepository.save(instructor);</span>
-
-<span class="fc" id="L53">    return savedInstructor;</span>
+<span class="fc" id="L52">    return savedInstructor;</span>
     }
 
     @Operation(summary= &quot;Delete an Instructor&quot;)
@@ -58,13 +57,11 @@ import lombok.extern.slf4j.Slf4j;
     @DeleteMapping(&quot;&quot;)
     public Object deleteInstructor(@Parameter(name=&quot;email&quot;) @RequestParam String email) {
         
-<span class="fc" id="L61">        Instructor  instructor = instructorRepository.findById(email)</span>
-<span class="fc" id="L62">                .orElseThrow(() -&gt; new EntityNotFoundException(Instructor.class, email));</span>
+<span class="fc" id="L60">        Instructor  instructor = instructorRepository.findById(email)</span>
+<span class="fc" id="L61">                .orElseThrow(() -&gt; new EntityNotFoundException(Instructor.class, email));</span>
 
-<span class="fc" id="L64">        instructorRepository.delete(instructor);</span>
-<span class="fc" id="L65">        return genericMessage(&quot;Instructor with valid email is deleted&quot;.formatted(email));</span>
+<span class="fc" id="L63">        instructorRepository.delete(instructor);</span>
+<span class="fc" id="L64">        return genericMessage(&quot;Instructor with valid email is deleted&quot;.formatted(email));</span>
     }
-
-
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
