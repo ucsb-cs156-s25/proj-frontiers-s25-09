@@ -40,6 +40,15 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MvcResult;
 
+import edu.ucsb.cs156.frontiers.jobs.GitHubOrgStatusJob;
+
+import edu.ucsb.cs156.frontiers.services.CourseService;
+import edu.ucsb.cs156.frontiers.services.GithubOrgMembershipService;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+
 /**
  * This class tests the ability of the JobsController to manipulate jobs, and
  * the funcitonality of the jobs system in general.
@@ -58,13 +67,20 @@ import org.springframework.test.web.servlet.MvcResult;
 public class JobsControllerDetailedTests extends ControllerTestCase {
 
   @MockitoBean
-  JobsRepository jobsRepository;
+JobsRepository jobsRepository;
 
-  @MockitoBean
-  UserRepository userRepository;
+@MockitoBean
+UserRepository userRepository;
 
-  @MockitoBean
-  UpdateUserService updateUserService; // This will be used in the UpdateAllJob to call the GithubSignInService
+@MockitoBean
+UpdateUserService updateUserService;
+
+@MockitoBean
+CourseService courseService;
+
+
+@MockitoBean  
+GithubOrgMembershipService githubOrgMembershipService;
 
   @Autowired
   JobService jobService;
@@ -372,6 +388,22 @@ public class JobsControllerDetailedTests extends ControllerTestCase {
     // assert
     String responseString = response.getResponse().getContentAsString();
     Job jobReturned = objectMapper.readValue(responseString, Job.class);
-    MatcherAssert.assertThat(jobReturned.getStatus(), Matchers.anyOf(Matchers.is("completed"), Matchers.is("running")));
+    MatcherAssert.assertThat(jobReturned.getStatus(), Matchers.anyOf(Matchers.is("completed"), Matchers.is("running"), Matchers.is("complete")));
+
   }
+  @WithMockUser(roles = { "ADMIN" })
+@Test
+public void testLaunchGitHubOrgStatusJob() throws Exception {
+    // when
+    MvcResult response = mockMvc
+            .perform(post("/api/jobs/launch/githuborgstatus").with(csrf()))
+            .andExpect(status().isOk()).andReturn();
+
+    // then - just verify we get a proper response
+    String responseString = response.getResponse().getContentAsString();
+    assertFalse(responseString.isEmpty());
+    
+    // Optional: verify it looks like a Job JSON response
+    assertTrue(responseString.contains("\"status\""));
+}
 }

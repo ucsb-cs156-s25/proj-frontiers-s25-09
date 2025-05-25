@@ -21,6 +21,10 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
+import edu.ucsb.cs156.frontiers.services.CourseService;
+import edu.ucsb.cs156.frontiers.services.GithubOrgMembershipService;
+
+
 @RestClientTest(OrganizationLinkerService.class)
 @AutoConfigureDataJpa
 public class OrganizationLinkerServiceTests {
@@ -29,6 +33,12 @@ public class OrganizationLinkerServiceTests {
 
     @MockitoBean
     private JwtService jwtService;
+
+    @MockitoBean
+     CourseService courseService;
+
+     @MockitoBean
+     GithubOrgMembershipService githubOrgMembershipService;
 
     @Autowired
     private MockRestServiceServer mockRestServiceServer;

@@ -28,6 +28,8 @@ import edu.ucsb.cs156.frontiers.services.UpdateUserService;
 import edu.ucsb.cs156.frontiers.services.jobs.JobService;
 import lombok.extern.slf4j.Slf4j;
 
+import edu.ucsb.cs156.frontiers.services.CourseService;
+import edu.ucsb.cs156.frontiers.services.GithubOrgMembershipService;
 
 /**
  * This class tests the ability of the JobsController to launch jobs.
@@ -49,8 +51,19 @@ public class JobsControllerJobsTests extends ControllerTestCase {
   @MockitoBean
   UserRepository userRepository;
 
+  
+
+
+
   @MockitoBean
   UpdateUserService updateUserService; // This will be used in the UpdateAllJob to call the GithubSignInService
+
+  @MockitoBean
+  CourseService courseService;
+
+  @MockitoBean
+  GithubOrgMembershipService githubOrgMembershipService;
+
 
   @MockitoBean
   JobService jobService;
