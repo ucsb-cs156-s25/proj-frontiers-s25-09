@@ -14,6 +14,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
+
+import edu.ucsb.cs156.frontiers.services.CourseService;
+import edu.ucsb.cs156.frontiers.services.GithubOrgMembershipService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.orm.jpa.AutoConfigureDataJpa;
@@ -67,6 +71,12 @@ public class JwtServiceTests {
 
     @MockitoBean
     private WiremockService wiremockService;
+
+    @MockitoBean
+    CourseService courseService;
+
+    @MockitoBean
+    GithubOrgMembershipService githubOrgMembershipService;
 
     @Value("${app.public.key:no-key-present}")
     private String publicKey;
