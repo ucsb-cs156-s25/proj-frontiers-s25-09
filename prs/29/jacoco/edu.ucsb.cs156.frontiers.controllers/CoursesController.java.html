@@ -4,6 +4,10 @@ import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
@@ -25,7 +29,9 @@ import edu.ucsb.cs156.frontiers.entities.RosterStudent;
 import edu.ucsb.cs156.frontiers.errors.EntityNotFoundException;
 import edu.ucsb.cs156.frontiers.errors.InvalidInstallationTypeException;
 import edu.ucsb.cs156.frontiers.models.CurrentUser;
+import edu.ucsb.cs156.frontiers.models.RosterStudentDTO;
 import edu.ucsb.cs156.frontiers.repositories.CourseRepository;
+import edu.ucsb.cs156.frontiers.repositories.RosterStudentRepository;
 import edu.ucsb.cs156.frontiers.services.OrganizationLinkerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,14 +47,16 @@ import edu.ucsb.cs156.frontiers.enums.OrgStatus;
 @Tag(name = &quot;Course&quot;)
 @RequestMapping(&quot;/api/courses&quot;)
 @RestController
-<span class="fc" id="L44">@Slf4j</span>
-<span class="fc" id="L45">public class CoursesController extends ApiController {</span>
+<span class="fc" id="L50">@Slf4j</span>
+<span class="fc" id="L51">public class CoursesController extends ApiController {</span>
     
     @Autowired
     private CourseRepository courseRepository;
 
     @Autowired private OrganizationLinkerService linkerService;
 
+    @Autowired
+    private RosterStudentRepository rosterStudentRepository;
      /**
      * This method creates a new Course.
      * 
@@ -70,17 +78,17 @@ import edu.ucsb.cs156.frontiers.enums.OrgStatus;
            )
             {
         //get current date right now and set status to pending
-<span class="fc" id="L73">        CurrentUser currentUser = getCurrentUser();</span>
-<span class="fc" id="L74">        Course course = Course.builder()</span>
-<span class="fc" id="L75">                .orgName(orgName)</span>
-<span class="fc" id="L76">                .courseName(courseName)</span>
-<span class="fc" id="L77">                .term(term)</span>
-<span class="fc" id="L78">                .school(school)</span>
-<span class="fc" id="L79">                .creator(currentUser.getUser())</span>
-<span class="fc" id="L80">                .build();</span>
-<span class="fc" id="L81">        Course savedCourse = courseRepository.save(course);</span>
+<span class="fc" id="L81">        CurrentUser currentUser = getCurrentUser();</span>
+<span class="fc" id="L82">        Course course = Course.builder()</span>
+<span class="fc" id="L83">                .orgName(orgName)</span>
+<span class="fc" id="L84">                .courseName(courseName)</span>
+<span class="fc" id="L85">                .term(term)</span>
+<span class="fc" id="L86">                .school(school)</span>
+<span class="fc" id="L87">                .creator(currentUser.getUser())</span>
+<span class="fc" id="L88">                .build();</span>
+<span class="fc" id="L89">        Course savedCourse = courseRepository.save(course);</span>
 
-<span class="fc" id="L83">        return savedCourse;</span>
+<span class="fc" id="L91">        return savedCourse;</span>
     }
 
       /**
@@ -92,8 +100,8 @@ import edu.ucsb.cs156.frontiers.enums.OrgStatus;
     @GetMapping(&quot;/all&quot;)
     public Iterable&lt;Course&gt; allCourses(
     ) {
-<span class="fc" id="L95">        Iterable&lt;Course&gt; courses = courseRepository.findAll();</span>
-<span class="fc" id="L96">        return courses;</span>
+<span class="fc" id="L103">        Iterable&lt;Course&gt; courses = courseRepository.findAll();</span>
+<span class="fc" id="L104">        return courses;</span>
     }
 
 
@@ -109,10 +117,10 @@ import edu.ucsb.cs156.frontiers.enums.OrgStatus;
     @PreAuthorize(&quot;hasRole('ROLE_PROFESSOR')&quot;)
     @GetMapping(&quot;/redirect&quot;)
     public ResponseEntity&lt;Void&gt; linkCourse(@Parameter Long courseId) throws JsonProcessingException, NoSuchAlgorithmException, InvalidKeySpecException {
-<span class="fc" id="L112">        String newUrl = linkerService.getRedirectUrl();</span>
-<span class="fc" id="L113">        newUrl += &quot;/installations/new?state=&quot;+courseId;</span>
+<span class="fc" id="L120">        String newUrl = linkerService.getRedirectUrl();</span>
+<span class="fc" id="L121">        newUrl += &quot;/installations/new?state=&quot;+courseId;</span>
         //found this convenient solution here: https://stackoverflow.com/questions/29085295/spring-mvc-restcontroller-and-redirect
-<span class="fc" id="L115">        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, newUrl).build();</span>
+<span class="fc" id="L123">        return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, newUrl).build();</span>
     }
 
 
@@ -131,20 +139,40 @@ import edu.ucsb.cs156.frontiers.enums.OrgStatus;
                                                 @Parameter(name = &quot;setupAction&quot;) @RequestParam String setup_action,
                                                 @Parameter(name = &quot;code&quot;) @RequestParam String code,
                                                 @Parameter(name = &quot;state&quot;) @RequestParam Long state) throws NoSuchAlgorithmException, InvalidKeySpecException, JsonProcessingException {
-<span class="fc bfc" id="L134" title="All 2 branches covered.">        if(installation_id.isEmpty()) {</span>
-<span class="fc" id="L135">            return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, &quot;/courses/nopermissions&quot;).build();</span>
+<span class="fc bfc" id="L142" title="All 2 branches covered.">        if(installation_id.isEmpty()) {</span>
+<span class="fc" id="L143">            return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, &quot;/courses/nopermissions&quot;).build();</span>
         }else {
-<span class="fc" id="L137">            Course course = courseRepository.findById(state).orElseThrow(() -&gt; new EntityNotFoundException(Course.class, state));</span>
-<span class="fc bfc" id="L138" title="All 2 branches covered.">            if(!(course.getCreator().getId() ==getCurrentUser().getUser().getId())) {</span>
-<span class="fc" id="L139">                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();</span>
+<span class="fc" id="L145">            Course course = courseRepository.findById(state).orElseThrow(() -&gt; new EntityNotFoundException(Course.class, state));</span>
+<span class="fc bfc" id="L146" title="All 2 branches covered.">            if(!(course.getCreator().getId() ==getCurrentUser().getUser().getId())) {</span>
+<span class="fc" id="L147">                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();</span>
             }else{
-<span class="fc" id="L141">                String orgName = linkerService.getOrgName(installation_id.get());</span>
-<span class="fc" id="L142">                course.setInstallationId(installation_id.get());</span>
-<span class="fc" id="L143">                course.setOrgName(orgName);</span>
-<span class="fc" id="L144">                courseRepository.save(course);</span>
-<span class="fc" id="L145">                return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, &quot;/admin/courses?success=True&amp;course=&quot; + state).build();</span>
+<span class="fc" id="L149">                String orgName = linkerService.getOrgName(installation_id.get());</span>
+<span class="fc" id="L150">                course.setInstallationId(installation_id.get());</span>
+<span class="fc" id="L151">                course.setOrgName(orgName);</span>
+<span class="fc" id="L152">                courseRepository.save(course);</span>
+<span class="fc" id="L153">                return ResponseEntity.status(HttpStatus.MOVED_PERMANENTLY).header(HttpHeaders.LOCATION, &quot;/admin/courses?success=True&amp;course=&quot; + state).build();</span>
             }
         }
+    }
+
+    /**
+     * This method returns a list of students in the roster for a given course,
+     * with each student represented as a RosterStudentDTO including GitHub org status.
+     * 
+     * @param courseId the ID of the course
+     * @return a list of RosterStudentDTOs for the given course
+     */
+    @Operation(summary = &quot;Get list of students in a course roster, including orgStatus&quot;)
+    @PreAuthorize(&quot;hasRole('ROLE_ADMIN') or hasRole('ROLE_PROFESSOR')&quot;)
+    @GetMapping(&quot;/roster&quot;)
+    public List&lt;RosterStudentDTO&gt; getRosterForCourse(
+            @Parameter(name = &quot;courseId&quot;) @RequestParam Long courseId
+    ) {
+<span class="fc" id="L171">        Iterable&lt;RosterStudent&gt; studentsIterable = rosterStudentRepository.findByCourseId(courseId);</span>
+<span class="fc" id="L172">        List&lt;RosterStudent&gt; students = StreamSupport.stream(studentsIterable.spliterator(), false).collect(Collectors.toList());</span>
+<span class="fc" id="L173">        return students.stream()</span>
+<span class="fc" id="L174">                .map(RosterStudentDTO::from)</span>
+<span class="fc" id="L175">                .collect(Collectors.toList());</span>
     }
 
     /**
@@ -155,9 +183,9 @@ import edu.ucsb.cs156.frontiers.enums.OrgStatus;
     @ExceptionHandler({ InvalidInstallationTypeException.class })
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public Object handleInvalidInstallationType(Throwable e) {
-<span class="fc" id="L158">        return Map.of(</span>
-<span class="fc" id="L159">                &quot;type&quot;, e.getClass().getSimpleName(),</span>
-<span class="fc" id="L160">                &quot;message&quot;, e.getMessage()</span>
+<span class="fc" id="L186">        return Map.of(</span>
+<span class="fc" id="L187">                &quot;type&quot;, e.getClass().getSimpleName(),</span>
+<span class="fc" id="L188">                &quot;message&quot;, e.getMessage()</span>
         );
     }
 
@@ -175,23 +203,23 @@ import edu.ucsb.cs156.frontiers.enums.OrgStatus;
      */
     
     @Operation(summary = &quot;Get all courses for a student&quot;)
-    @PreAuthorize(&quot;hasRole('ROLE_STUDENT')&quot;)
+    @PreAuthorize(&quot;hasRole('ROLE_USER')&quot;)
     @GetMapping(&quot;/student&quot;)
     public ResponseEntity&lt;List&lt;StudentCourseView&gt;&gt; getCoursesForStudent() {
-<span class="fc" id="L181">        String email = getCurrentUser().getUser().getEmail();</span>
+<span class="fc" id="L209">        String email = getCurrentUser().getUser().getEmail();</span>
 
-<span class="fc" id="L183">        List&lt;StudentCourseView&gt; results = courseRepository</span>
-<span class="fc" id="L184">                .findAllByRosterStudents_Email(email)</span>
-<span class="fc" id="L185">.stream()</span>
-<span class="fc" id="L186">            .map(c -&gt; new StudentCourseView(c, email))</span>
-<span class="fc" id="L187">                .toList();</span>
+<span class="fc" id="L211">        List&lt;StudentCourseView&gt; results = courseRepository</span>
+<span class="fc" id="L212">                .findAllByRosterStudents_Email(email)</span>
+<span class="fc" id="L213">.stream()</span>
+<span class="fc" id="L214">            .map(c -&gt; new StudentCourseView(c, email))</span>
+<span class="fc" id="L215">                .toList();</span>
 
-<span class="fc" id="L189">        return ResponseEntity.ok(results);</span>
+<span class="fc" id="L217">        return ResponseEntity.ok(results);</span>
     }
 
     
     // Lightweight projection of Course entity with only student-relevant fields
-<span class="fc" id="L194">    public static record StudentCourseView(</span>
+<span class="fc" id="L222">    public static record StudentCourseView(</span>
             Long id,
             String installationId,
             String orgName,
@@ -203,32 +231,32 @@ import edu.ucsb.cs156.frontiers.enums.OrgStatus;
         
         // Creates view from Course entity and student email
         public StudentCourseView(Course c, String email) {
-<span class="fc" id="L206">            this(</span>
-<span class="fc" id="L207">                c.getId(),</span>
-<span class="fc" id="L208">                c.getInstallationId(),</span>
-<span class="fc" id="L209">                c.getOrgName(),</span>
-<span class="fc" id="L210">                c.getCourseName(),</span>
-<span class="fc" id="L211">                c.getTerm(),</span>
-<span class="fc" id="L212">                c.getSchool(),</span>
-<span class="fc" id="L213">                mapStatus(</span>
-<span class="fc" id="L214">                    c.getRosterStudents()</span>
-<span class="fc" id="L215">                     .stream()</span>
-<span class="fc" id="L216">                     .filter(s -&gt; s.getEmail().equals(email))</span>
-<span class="fc" id="L217">                     .findFirst()</span>
-<span class="fc" id="L218">                     .orElse(null)));</span>
-<span class="fc" id="L219">        }</span>
+<span class="fc" id="L234">            this(</span>
+<span class="fc" id="L235">                c.getId(),</span>
+<span class="fc" id="L236">                c.getInstallationId(),</span>
+<span class="fc" id="L237">                c.getOrgName(),</span>
+<span class="fc" id="L238">                c.getCourseName(),</span>
+<span class="fc" id="L239">                c.getTerm(),</span>
+<span class="fc" id="L240">                c.getSchool(),</span>
+<span class="fc" id="L241">                mapStatus(</span>
+<span class="fc" id="L242">                    c.getRosterStudents()</span>
+<span class="fc" id="L243">                     .stream()</span>
+<span class="fc" id="L244">                     .filter(s -&gt; s.getEmail().equals(email))</span>
+<span class="fc" id="L245">                     .findFirst()</span>
+<span class="fc" id="L246">                     .orElse(null)));</span>
+<span class="fc" id="L247">        }</span>
 
         
         // Maps OrgStatus enum to human-readable status message
         private static String mapStatus(RosterStudent rs) {
-<span class="fc bfc" id="L224" title="All 2 branches covered.">            if (rs == null) return &quot;Not yet requested an invitation&quot;;</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">            if (rs == null) return &quot;Not yet requested an invitation&quot;;</span>
 
-<span class="fc bfc" id="L226" title="All 5 branches covered.">            return switch (rs.getOrgStatus()) {</span>
-<span class="fc" id="L227">                case NONE -&gt; &quot;Not yet requested an invitation&quot;;</span>
-<span class="fc" id="L228">                case INVITED -&gt; &quot;Has requested an invitation but isn't yet a member&quot;;</span>
-<span class="fc" id="L229">                case MEMBER -&gt; &quot;Is a member of the org&quot;;</span>
-<span class="fc" id="L230">                case OWNER -&gt; &quot;Is an admin in the org&quot;;</span>
-<span class="fc" id="L231">                case EXPIRED -&gt; &quot;Invitation has expired&quot;;</span>
+<span class="fc bfc" id="L254" title="All 5 branches covered.">            return switch (rs.getOrgStatus()) {</span>
+<span class="fc" id="L255">                case NONE -&gt; &quot;Not yet requested an invitation&quot;;</span>
+<span class="fc" id="L256">                case INVITED -&gt; &quot;Has requested an invitation but isn't yet a member&quot;;</span>
+<span class="fc" id="L257">                case MEMBER -&gt; &quot;Is a member of the org&quot;;</span>
+<span class="fc" id="L258">                case OWNER -&gt; &quot;Is an admin in the org&quot;;</span>
+<span class="fc" id="L259">                case EXPIRED -&gt; &quot;Invitation has expired&quot;;</span>
             };
         }
     }
